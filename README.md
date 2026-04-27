@@ -4,7 +4,7 @@ A curated short-form video app that turns scrolling time into learning time.
 
 Every video is hand-selected from trusted educational creators across science, tech, business, math, and more. Built mobile-first with a TikTok-style vertical scroll experience.
 
-🔗 **Live demo:** [your-vercel-url.vercel.app](https://your-vercel-url.vercel.app)
+🔗 **Live demo:** https://scroll-learn.vercel.app/
 
 ---
 
