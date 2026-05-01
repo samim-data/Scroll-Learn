@@ -57,6 +57,26 @@ const PersistentPlayer = forwardRef(({ initialVideoId, isVisible, userInteracted
         },
     };
 
+    // Reusable scroll handler so both zones use the same logic
+    const handleScrollZone = (e) => {
+        e.preventDefault();
+        const scrollContainer = document.querySelector('[data-scroll-container]');
+        if (!scrollContainer) return;
+
+        if (scrollContainer.dataset.scrolling === 'true') return;
+        scrollContainer.dataset.scrolling = 'true';
+        setTimeout(() => {
+            scrollContainer.dataset.scrolling = 'false';
+        }, 600);
+
+        const direction = e.deltaY > 0 ? 1 : -1;
+        const videoHeight = window.innerHeight;
+        scrollContainer.scrollBy({
+            top: direction * videoHeight,
+            behavior: 'smooth',
+        });
+    };
+
     return (
         <div
             className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[80vh] w-full max-w-[min(100vw,calc(80vh*9/16))] bg-black rounded-2xl overflow-hidden z-20"
@@ -76,7 +96,7 @@ const PersistentPlayer = forwardRef(({ initialVideoId, isVisible, userInteracted
                 />
             </div>
 
-            {/* Scroll-capture zone — explicitly above iframe */}
+            {/* Right-side scroll zone */}
             <div
                 className="absolute right-0"
                 style={{
@@ -85,28 +105,23 @@ const PersistentPlayer = forwardRef(({ initialVideoId, isVisible, userInteracted
                     top: '25%',
                     zIndex: 50,
                     touchAction: 'pan-y',
-                    background: 'transparent',  // keep visible while testing
+                    background: 'transparent',
                 }}
-                onWheel={(e) => {
-                    e.preventDefault();
-                    const scrollContainer = document.querySelector('[data-scroll-container]');
-                    if (!scrollContainer) return;
+                onWheel={handleScrollZone}
+            />
 
-                    // Throttle: ignore further wheel events for 600ms after a scroll
-                    if (scrollContainer.dataset.scrolling === 'true') return;
-                    scrollContainer.dataset.scrolling = 'true';
-                    setTimeout(() => {
-                        scrollContainer.dataset.scrolling = 'false';
-                    }, 600);
-
-                    // Direction: positive deltaY = scroll down (next video)
-                    const direction = e.deltaY > 0 ? 1 : -1;
-                    const videoHeight = window.innerHeight;
-                    scrollContainer.scrollBy({
-                        top: direction * videoHeight,
-                        behavior: 'smooth',
-                    });
+            {/* Left-side scroll zone */}
+            <div
+                className="absolute left-0"
+                style={{
+                    width: '37%',
+                    height: '50%',
+                    top: '25%',
+                    zIndex: 50,
+                    touchAction: 'pan-y',
+                    background: 'transparent',
                 }}
+                onWheel={handleScrollZone}
             />
         </div>
     );
