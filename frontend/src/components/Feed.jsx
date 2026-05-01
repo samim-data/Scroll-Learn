@@ -154,6 +154,7 @@ export default function Feed() {
         <>
           <div
             ref={containerRef}
+            data-scroll-container
             onClick={() => setUserInteracted(true)}
             className="h-screen overflow-y-scroll snap-y snap-mandatory bg-black"
           >
