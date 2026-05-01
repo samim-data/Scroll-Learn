@@ -57,24 +57,46 @@ const PersistentPlayer = forwardRef(({ initialVideoId, isVisible, userInteracted
         },
     };
 
-    // Reusable scroll handler so both zones use the same logic
-    const handleScrollZone = (e) => {
-        e.preventDefault();
+    // Reusable scroll handlers — both wheel (desktop) and touch (mobile)
+    const triggerScroll = (direction) => {
         const scrollContainer = document.querySelector('[data-scroll-container]');
         if (!scrollContainer) return;
-
         if (scrollContainer.dataset.scrolling === 'true') return;
+
         scrollContainer.dataset.scrolling = 'true';
         setTimeout(() => {
             scrollContainer.dataset.scrolling = 'false';
         }, 600);
 
-        const direction = e.deltaY > 0 ? 1 : -1;
         const videoHeight = window.innerHeight;
         scrollContainer.scrollBy({
             top: direction * videoHeight,
             behavior: 'smooth',
         });
+    };
+
+    const handleWheel = (e) => {
+        e.preventDefault();
+        const direction = e.deltaY > 0 ? 1 : -1;
+        triggerScroll(direction);
+    };
+
+    // Track touch start to detect swipe direction
+    const touchStartYRef = useRef(0);
+
+    const handleTouchStart = (e) => {
+        touchStartYRef.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e) => {
+        const touchEndY = e.changedTouches[0].clientY;
+        const deltaY = touchStartYRef.current - touchEndY;
+
+        // Only trigger if swipe is significant (50px or more)
+        if (Math.abs(deltaY) < 50) return;
+
+        const direction = deltaY > 0 ? 1 : -1;  // swipe up = scroll down (next video)
+        triggerScroll(direction);
     };
 
     return (
@@ -104,11 +126,14 @@ const PersistentPlayer = forwardRef(({ initialVideoId, isVisible, userInteracted
                     height: '50%',
                     top: '25%',
                     zIndex: 50,
-                    touchAction: 'pan-y',
+                    touchAction: 'none',
                     background: 'transparent',
                 }}
-                onWheel={handleScrollZone}
+                onWheel={handleWheel}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
             />
+
 
             {/* Left-side scroll zone */}
             <div
@@ -118,10 +143,12 @@ const PersistentPlayer = forwardRef(({ initialVideoId, isVisible, userInteracted
                     height: '50%',
                     top: '25%',
                     zIndex: 50,
-                    touchAction: 'pan-y',
+                    touchAction: 'none',
                     background: 'transparent',
                 }}
-                onWheel={handleScrollZone}
+                onWheel={handleWheel}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
             />
         </div>
     );
