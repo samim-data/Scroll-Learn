@@ -10,7 +10,8 @@ const router = express.Router();
 //   category (optional) - filter by category like 'tech'
 router.get('/feed', async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+    const limit = Math.min(parseInt(req.query.limit) || 5, 50);
+    const offset = parseInt(req.query.offset) || 0;
     const category = req.query.category;
 
     // Step 1: If filtering by category, get matching channel IDs first
@@ -28,11 +29,11 @@ router.get('/feed', async (req, res) => {
       channelIds = channels.map((c) => c.id);
 
       if (channelIds.length === 0) {
-        return res.json({ videos: [], count: 0 });
+        return res.json({ videos: [], hasMore: false });
       }
     }
 
-    // Step 2: Query videos, optionally filtering by channel IDs
+    // Step 2: Query videos with offset and limit
     let query = supabase
       .from('videos')
       .select(`
@@ -48,7 +49,7 @@ router.get('/feed', async (req, res) => {
         channel_id
       `)
       .order('published_at', { ascending: false })
-      .limit(limit * 3);
+      .range(offset, offset + limit - 1);
 
     if (channelIds) {
       query = query.in('channel_id', channelIds);
@@ -76,9 +77,10 @@ router.get('/feed', async (req, res) => {
       channel: channelMap[v.channel_id] || null,
     }));
 
-    const shuffled = shuffleArray(enrichedVideos).slice(0, limit);
-
-    res.json({ videos: shuffled, count: shuffled.length });
+    res.json({
+      videos: enrichedVideos,
+      hasMore: videos.length === limit,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
