@@ -78,12 +78,14 @@ const PersistentPlayer = forwardRef(({ initialVideoId, isVisible, userInteracted
 
             {/* Scroll-capture zone — explicitly above iframe */}
             <div
-                className="absolute top-0 right-0 h-full"
+                className="absolute right-0"
                 style={{
-                    width: '28%',
+                    width: '37%',
+                    height: '50%',
+                    top: '25%',
                     zIndex: 50,
                     touchAction: 'pan-y',
-                    background: 'transparent',
+                    background: 'transparent',  // keep visible while testing
                 }}
                 onWheel={(e) => {
                     e.preventDefault();
