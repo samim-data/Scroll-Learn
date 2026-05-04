@@ -3,6 +3,7 @@ import { getFeed } from '../api';
 import VideoCard from './VideoCard';
 import CategoryMenu from './CategoryMenu';
 import PersistentPlayer from './PersistentPlayer';
+import DeepDiveSheet from './DeepDiveSheet';
 
 const INITIAL_LOAD = 10;
 const PAGE_SIZE = 10;
@@ -20,6 +21,7 @@ export default function Feed() {
   const playerRef = useRef(null);
   const isLoadingMoreRef = useRef(false);
   const lastLoadedVideoIdRef = useRef(null);
+  const [deepDiveOpen, setDeepDiveOpen] = useState(false);
 
   // Load initial videos when category changes
   useEffect(() => {
@@ -132,6 +134,21 @@ export default function Feed() {
         onSelectCategory={setSelectedCategory}
       />
 
+      {/* Floating "Go Deeper" button */}
+      {!loading && !error && videos.length > 0 && (
+        <button
+          onClick={() => setDeepDiveOpen(true)}
+          className="fixed bottom-6 right-6 z-40 bg-white text-black px-4 py-2 rounded-full font-semibold shadow-lg hover:bg-gray-100 transition-colors"
+        >
+          Go Deeper
+        </button>
+      )}
+
+      <DeepDiveSheet
+        video={videos[activeIndex]}
+        isOpen={deepDiveOpen}
+        onClose={() => setDeepDiveOpen(false)}
+      />
       {loading && (
         <div className="h-screen flex items-center justify-center text-white bg-black">
           Loading...
