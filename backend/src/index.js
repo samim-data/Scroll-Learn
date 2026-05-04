@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { supabase } from './supabase.js';
 import feedRouter from './routes/feed.js';
 import adminRouter from './routes/admin.js';
+import deepdiveRoutes from './routes/deepdive.js';
 
 dotenv.config();
 
@@ -12,7 +13,7 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
-
+app.use('/api', deepdiveRoutes);
 app.get('/', (req, res) => {
   res.json({ message: 'Scroll-learn backend is running' });
 });

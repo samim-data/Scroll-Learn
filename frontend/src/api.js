@@ -14,3 +14,7 @@ export async function getChannels() {
   const response = await axios.get(`${API_BASE}/channels`);
   return response.data.channels;
 }
+export async function getDeepDive(youtubeVideoId) {
+  const response = await axios.get(`${API_BASE}/deepdive/${youtubeVideoId}`);
+  return response.data;
+}
