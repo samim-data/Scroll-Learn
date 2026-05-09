@@ -8,12 +8,13 @@ import VideoOverlay from './VideoOverlay';
 import SessionSummary from './SessionSummary';
 import { useSession } from '../hooks/useSession';
 import { useBookmarks } from '../hooks/useBookmarks';
+import UserMenu from './UserMenu';
 
 const INITIAL_LOAD = 10;
 const PAGE_SIZE = 10;
 const BUFFER_AHEAD = 5;
 
-export default function Feed() {
+export default function Feed({ user, onSignOut }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
@@ -168,6 +169,8 @@ export default function Feed() {
         autoShow={autoShow}
         onDismissAuto={dismissAuto}
       />
+
+      <UserMenu user={user} onSignOut={onSignOut} />
 
       {!loading && !error && videos.length > 0 && (
         <VideoOverlay

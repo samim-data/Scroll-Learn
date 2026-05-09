@@ -1,7 +1,21 @@
+import { useAuth } from './hooks/useAuth';
 import Feed from './components/Feed';
+import AuthPage from './components/AuthPage';
 
-function App() {
-  return <Feed />;
+export default function App() {
+  const { user, loading, signIn, signUp, signOut } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-sm">Loading…</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage onSignIn={signIn} onSignUp={signUp} />;
+  }
+
+  return <Feed user={user} onSignOut={signOut} />;
 }
-
-export default App;
