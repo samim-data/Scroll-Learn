@@ -1,6 +1,6 @@
 # Scroll-Learn
 
-**Live:** [scroll-learn.vercel.app](https://scroll-learn.vercel.app)
+**Live:** [scroll-learn.vercel.app](https://scroll-learn.vercel.app) &nbsp;|&nbsp; **[Engineering Wiki →](./docs/README.md)**
 
 A TikTok-style feed for short educational videos. Built because doomscrolling is too easy and learning shouldn't be a separate decision — same scroll, different content.
 
@@ -96,13 +96,30 @@ The refresh script fetches recent shorts (≤180 seconds) from each seeded chann
 
 ---
 
+## Hackathon sprint — shipping in 12 hours
+
+4 developers, 12 hours, 6 features:
+
+| Feature | Owner | Tools |
+|---|---|---|
+| Branding + Search UI + Save button + Slide renderer | Dev 1 | Lovable |
+| Schema migrations + Search/Save/Watch APIs + Recommendation | Dev 2 | Kimi |
+| Transcript fetching + AI slide generation (summary/concept/quiz) | Dev 3 | Kimi |
+| Supabase Auth + JWT middleware + Login/Signup pages | Dev 4 | Kimi |
+
+> Full sprint plan, hour-by-hour breakdown, and AI tool usage: **[wiki/Hackathon-Sprint](https://github.com/samim-data/Scroll-Learn/wiki/Hackathon-Sprint)**
+
+---
+
 ## Roadmap (rough)
 
-**v1.5** — Saved videos, bigger library, search by topic, basic tags
+**Hackathon MVP** — Auth, search, save, transcript-powered deep dive slides, category-based personalisation
 
-**v2** — Recommendation algorithm based on user watch behavior, learning paths (curated playlists for specific topics), transcript-aware deep-dives
+**v2** — Recommendation algorithm based on user watch behavior, learning paths (curated playlists for specific topics), pgvector embeddings
 
-**v3** — Native mobile app, creator partnerships, possibly hosting our own video content to break the YouTube performance ceiling
+**v3** — Expo mobile app (iOS + Android), full interactive AI slide deck (6 types), personalised recommendation engine, user stats dashboard
+
+> Full engineering wiki: **[docs/](./docs/README.md)** &nbsp;|&nbsp; **[GitHub Wiki](https://github.com/samim-data/Scroll-Learn/wiki)**
 
 ---
 
