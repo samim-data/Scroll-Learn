@@ -15,25 +15,7 @@ router.get('/feed', async (req, res) => {
     const category = req.query.category;
 
     // Step 1: If filtering by category, get matching channel IDs first
-    let channelIds = null;
-    if (category) {
-      const { data: channels, error: channelsError } = await supabase
-        .from('channels')
-        .select('id')
-        .eq('category', category);
-
-      if (channelsError) {
-        return res.status(500).json({ error: channelsError.message });
-      }
-
-      channelIds = channels.map((c) => c.id);
-
-      if (channelIds.length === 0) {
-        return res.json({ videos: [], hasMore: false });
-      }
-    }
-
-    // Step 2: Query videos with offset and limit
+    // Fetch limit+1 to reliably detect if more pages exist
     let query = supabase
       .from('videos')
       .select(`
@@ -46,41 +28,27 @@ router.get('/feed', async (req, res) => {
         published_at,
         view_count,
         like_count,
-        channel_id
+        channel_id,
+        channel:channels!inner(id, name, category, youtube_channel_id)
       `)
       .order('published_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + limit);
 
-    if (channelIds) {
-      query = query.in('channel_id', channelIds);
+    if (category) {
+      query = query.eq('channels.category', category);
     }
 
-    const { data: videos, error } = await query;
+    const { data: rows, error } = await query;
 
     if (error) {
-      return res.status(500).json({ error: error.message });
+      console.error('Feed query error:', error.message);
+      return res.status(500).json({ error: 'Failed to fetch feed' });
     }
 
-    // Step 3: Fetch channel info separately and attach
-    const uniqueChannelIds = [...new Set(videos.map((v) => v.channel_id))];
-    const { data: channelsData } = await supabase
-      .from('channels')
-      .select('id, name, category, youtube_channel_id')
-      .in('id', uniqueChannelIds);
+    const hasMore = rows.length > limit;
+    const videos = hasMore ? rows.slice(0, limit) : rows;
 
-    const channelMap = Object.fromEntries(
-      (channelsData || []).map((c) => [c.id, c])
-    );
-
-    const enrichedVideos = videos.map((v) => ({
-      ...v,
-      channel: channelMap[v.channel_id] || null,
-    }));
-
-    res.json({
-      videos: enrichedVideos,
-      hasMore: videos.length === limit,
-    });
+    res.json({ videos, hasMore });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -100,11 +68,15 @@ router.get('/channels', async (req, res) => {
 
     const { data, error } = await query;
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) {
+      console.error('Channels query error:', error.message);
+      return res.status(500).json({ error: 'Failed to fetch channels' });
+    }
 
     res.json({ channels: data, count: data.length });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -132,18 +104,10 @@ router.get('/videos/:id', async (req, res) => {
 
     res.json({ video: data });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Helper: Fisher-Yates shuffle for randomizing the feed
-function shuffleArray(array) {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
 
 export default router;
