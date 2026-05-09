@@ -10,13 +10,14 @@ const FALLBACK_SLIDE = (title) => ({
 });
 
 function validateSlides(slides) {
-  if (!Array.isArray(slides) || slides.length !== 4) return false;
+  if (!Array.isArray(slides) || slides.length !== 5) return false;
   const types = slides.map(s => s.type);
-  if (types[0] !== 'summary' || types[3] !== 'quiz') return false;
+  if (types[0] !== 'summary' || types[3] !== 'quiz' || types[4] !== 'takeaway') return false;
   for (const s of slides) {
-    if (s.type === 'summary' && (!s.title || !s.body || !s.emoji)) return false;
-    if (s.type === 'concept' && (!s.term || !s.definition)) return false;
-    if (s.type === 'quiz' && (!s.question || !Array.isArray(s.options) || s.options.length !== 4)) return false;
+    if (s.type === 'summary'  && (!s.title || !s.body || !s.emoji)) return false;
+    if (s.type === 'concept'  && (!s.term || !s.definition)) return false;
+    if (s.type === 'quiz'     && (!s.question || !Array.isArray(s.options) || s.options.length !== 4)) return false;
+    if (s.type === 'takeaway' && !s.sentence) return false;
   }
   return true;
 }
@@ -32,7 +33,7 @@ Transcript: ${content}
 Your goal: after reading your 4 slides, the student should be able to explain
 this topic to someone else in one sentence — and pass the quiz.
 
-Produce exactly 4 slides in this order: summary → concept → concept → quiz.
+Produce exactly 5 slides in this order: summary → concept → concept → quiz → takeaway.
 
 Slide 1 — summary
   title: the ONE insight from this video that changes how you think about the topic (not the topic name)
@@ -50,6 +51,10 @@ Slide 4 — quiz
   answer_index: 0-3 (index of the correct option in the options array)
   explanation: 1 sentence — reveals WHY the correct answer is right, not just that it is
 
+Slide 5 — takeaway
+  sentence: the single sentence the student should still remember in one week
+  Make it specific, surprising, and impossible to forget. Not a summary — a revelation.
+
 Return ONLY valid JSON. No markdown fences. No text outside the JSON object.
 
 {
@@ -57,7 +62,8 @@ Return ONLY valid JSON. No markdown fences. No text outside the JSON object.
     { "type": "summary",  "title": "...", "body": "...", "emoji": "..." },
     { "type": "concept",  "term": "...", "definition": "..." },
     { "type": "concept",  "term": "...", "definition": "..." },
-    { "type": "quiz",     "question": "...", "options": ["...","...","...","..."], "answer_index": 0, "explanation": "..." }
+    { "type": "quiz",     "question": "...", "options": ["...","...","...","..."], "answer_index": 0, "explanation": "..." },
+    { "type": "takeaway", "sentence": "..." }
   ]
 }`;
 

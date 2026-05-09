@@ -3,11 +3,13 @@ import { getDeepDive } from '../api';
 import SummarySlide from './slides/SummarySlide';
 import ConceptSlide from './slides/ConceptSlide';
 import QuizSlide from './slides/QuizSlide';
+import TakeawaySlide from './slides/TakeawaySlide';
 
 function SlideRenderer({ slide }) {
-  if (slide.type === 'summary') return <SummarySlide slide={slide} />;
-  if (slide.type === 'concept') return <ConceptSlide slide={slide} />;
-  if (slide.type === 'quiz')    return <QuizSlide slide={slide} />;
+  if (slide.type === 'summary')  return <SummarySlide slide={slide} />;
+  if (slide.type === 'concept')  return <ConceptSlide slide={slide} />;
+  if (slide.type === 'quiz')     return <QuizSlide slide={slide} />;
+  if (slide.type === 'takeaway') return <TakeawaySlide slide={slide} />;
   return null;
 }
 
