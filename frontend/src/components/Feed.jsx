@@ -4,12 +4,17 @@ import VideoCard from './VideoCard';
 import CategoryMenu from './CategoryMenu';
 import PersistentPlayer from './PersistentPlayer';
 import DeepDiveSheet from './DeepDiveSheet';
+import VideoOverlay from './VideoOverlay';
+import SessionSummary from './SessionSummary';
+import { useSession } from '../hooks/useSession';
+import { useBookmarks } from '../hooks/useBookmarks';
+import UserMenu from './UserMenu';
 
 const INITIAL_LOAD = 10;
 const PAGE_SIZE = 10;
 const BUFFER_AHEAD = 5;
 
-export default function Feed() {
+export default function Feed({ user, onSignOut }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
@@ -21,7 +26,12 @@ export default function Feed() {
   const playerRef = useRef(null);
   const isLoadingMoreRef = useRef(false);
   const lastLoadedVideoIdRef = useRef(null);
+  const observerRef = useRef(null);
+  const observedCardsRef = useRef(new Set());
   const [deepDiveOpen, setDeepDiveOpen] = useState(false);
+  const { session, recordWatch, autoShow, dismissAuto } = useSession();
+  const { toggle: toggleBookmark, isBookmarked } = useBookmarks();
+  const lastRecordedIndexRef = useRef(-1);
 
   // Load initial videos when category changes
   useEffect(() => {
@@ -32,6 +42,12 @@ export default function Feed() {
       setActiveIndex(0);
       setHasMore(true);
       lastLoadedVideoIdRef.current = null;
+      observedCardsRef.current = new Set();
+
+      // Pause the player while the new category loads
+      if (playerRef.current) {
+        playerRef.current.pause();
+      }
 
       try {
         const data = await getFeed(INITIAL_LOAD, 0, selectedCategory);
@@ -88,14 +104,9 @@ export default function Feed() {
     }
   }, [activeIndex, videos.length, hasMore, loadMore]);
 
-  // IntersectionObserver: tracks active index
+  // Create the IntersectionObserver once
   useEffect(() => {
-    if (videos.length === 0) return;
-
-    const cards = containerRef.current?.querySelectorAll('[data-video-index]');
-    if (!cards) return;
-
-    const observer = new IntersectionObserver(
+    observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
@@ -106,26 +117,45 @@ export default function Feed() {
       },
       { threshold: [0, 0.6, 1] }
     );
+    return () => {
+      observerRef.current?.disconnect();
+      observedCardsRef.current = new Set();
+    };
+  }, []);
 
-    cards.forEach((card) => observer.observe(card));
-
-    return () => observer.disconnect();
+  // Observe only newly added cards when videos are appended
+  useEffect(() => {
+    if (videos.length === 0 || !observerRef.current) return;
+    const cards = containerRef.current?.querySelectorAll('[data-video-index]');
+    if (!cards) return;
+    cards.forEach((card) => {
+      const key = card.getAttribute('data-video-index');
+      if (!observedCardsRef.current.has(key)) {
+        observerRef.current.observe(card);
+        observedCardsRef.current.add(key);
+      }
+    });
   }, [videos.length]);
 
-  // Tell the persistent player to load the active video
+  // Tell the persistent player to load the active video + record session watch
   useEffect(() => {
     if (videos.length === 0) return;
     const activeVideo = videos[activeIndex];
     if (!activeVideo) return;
 
-    // Skip if this video is already loaded
     if (lastLoadedVideoIdRef.current === activeVideo.youtube_video_id) return;
 
     if (playerRef.current) {
       playerRef.current.loadVideo(activeVideo.youtube_video_id);
       lastLoadedVideoIdRef.current = activeVideo.youtube_video_id;
     }
-  }, [activeIndex, videos]);
+
+    // Record once per unique video visited
+    if (lastRecordedIndexRef.current !== activeIndex) {
+      recordWatch(activeVideo);
+      lastRecordedIndexRef.current = activeIndex;
+    }
+  }, [activeIndex, videos, recordWatch]);
 
   return (
     <>
@@ -134,14 +164,21 @@ export default function Feed() {
         onSelectCategory={setSelectedCategory}
       />
 
-      {/* Floating "Go Deeper" button */}
+      <SessionSummary
+        session={session}
+        autoShow={autoShow}
+        onDismissAuto={dismissAuto}
+      />
+
+      <UserMenu user={user} onSignOut={onSignOut} />
+
       {!loading && !error && videos.length > 0 && (
-        <button
-          onClick={() => setDeepDiveOpen(true)}
-          className="fixed bottom-6 right-6 z-40 bg-white text-black px-4 py-2 rounded-full font-semibold shadow-lg hover:bg-gray-100 transition-colors"
-        >
-          Go Deeper
-        </button>
+        <VideoOverlay
+          video={videos[activeIndex]}
+          isBookmarked={isBookmarked(videos[activeIndex]?.youtube_video_id)}
+          onToggleBookmark={() => toggleBookmark(videos[activeIndex])}
+          onDeepDive={() => setDeepDiveOpen(true)}
+        />
       )}
 
       <DeepDiveSheet
@@ -173,6 +210,8 @@ export default function Feed() {
             ref={containerRef}
             data-scroll-container
             onClick={() => setUserInteracted(true)}
+            onScroll={() => { if (!userInteracted) setUserInteracted(true); }}
+            onTouchStart={() => { if (!userInteracted) setUserInteracted(true); }}
             className="h-screen overflow-y-scroll snap-y snap-mandatory bg-black"
           >
             {videos.map((video, index) => (
