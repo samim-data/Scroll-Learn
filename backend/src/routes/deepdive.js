@@ -55,7 +55,7 @@ Format with clear sections and headings. Keep it engaging and accessible. Around
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-4o-mini',
+        model: process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 800,
       }),
@@ -83,7 +83,7 @@ Format with clear sections and headings. Keep it engaging and accessible. Around
     res.json({ deepDive: deepDiveText, cached: false });
   } catch (err) {
     console.error('Deep dive error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

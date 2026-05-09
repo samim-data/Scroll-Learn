@@ -35,6 +35,15 @@ const PersistentPlayer = forwardRef(({ initialVideoId, isVisible, userInteracted
         },
     }));
 
+    useEffect(() => {
+        if (userInteracted && playerRef.current && isReady) {
+            try {
+                playerRef.current.unMute();
+                playerRef.current.setVolume(100);
+            } catch (e) { }
+        }
+    }, [userInteracted, isReady]);
+
     const onReady = (event) => {
         playerRef.current = event.target;
         setIsReady(true);
