@@ -19,8 +19,8 @@ router.get('/deepdive/:videoId', async (req, res) => {
       return res.status(404).json({ error: 'Video not found' });
     }
 
-    // return cached slides if available
-    if (video.slide_json) {
+    // return cached slides if available and up to date (5 slides)
+    if (video.slide_json?.slides?.length === 5) {
       return res.json({ slides: video.slide_json.slides, cached: true });
     }
 
