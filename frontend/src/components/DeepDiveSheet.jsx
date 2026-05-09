@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { getDeepDive } from '../api';
 
 export default function DeepDiveSheet({ video, isOpen, onClose }) {
@@ -82,8 +83,8 @@ export default function DeepDiveSheet({ video, isOpen, onClose }) {
           )}
 
           {!loading && !error && content && (
-            <div className="prose prose-invert prose-sm max-w-none whitespace-pre-wrap leading-relaxed">
-              {content}
+            <div className="prose prose-invert prose-sm max-w-none leading-relaxed">
+              <ReactMarkdown>{content}</ReactMarkdown>
             </div>
           )}
         </div>

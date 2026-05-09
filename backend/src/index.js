@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { supabase } from './supabase.js';
+
 import feedRouter from './routes/feed.js';
 import adminRouter from './routes/admin.js';
 import deepdiveRoutes from './routes/deepdive.js';
@@ -22,11 +22,6 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/test-db', async (req, res) => {
-  const { data, error } = await supabase.from('channels').select('*');
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ channels: data, count: data.length });
-});
 
 app.use('/api', feedRouter);
 app.use('/api/admin', adminRouter);
