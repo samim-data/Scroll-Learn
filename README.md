@@ -1,6 +1,6 @@
 # Scroll-Learn
 
-**Live:** [scroll-learn.vercel.app](https://scroll-learn.vercel.app)
+**Live:** [scroll-learn.vercel.app](https://scroll-learn.vercel.app) &nbsp;|&nbsp; **[Engineering Wiki →](./docs/README.md)**
 
 A TikTok-style feed for short educational videos. Built because doomscrolling is too easy and learning shouldn't be a separate decision — same scroll, different content.
 
@@ -102,7 +102,9 @@ The refresh script fetches recent shorts (≤180 seconds) from each seeded chann
 
 **v2** — Recommendation algorithm based on user watch behavior, learning paths (curated playlists for specific topics), transcript-aware deep-dives
 
-**v3** — Native mobile app, creator partnerships, possibly hosting our own video content to break the YouTube performance ceiling
+**v3** — Expo mobile app (iOS + Android), interactive AI slide decks, personalised recommendation engine, user auth and stats
+
+> Full v3 engineering plan, developer roles, and API reference: **[docs/](./docs/README.md)**
 
 ---
 
