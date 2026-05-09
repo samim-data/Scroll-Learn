@@ -3,7 +3,7 @@ import Feed from './components/Feed';
 import AuthPage from './components/AuthPage';
 
 export default function App() {
-  const { user, loading, signIn, signUp, signOut } = useAuth();
+  const { user, loading, signIn, signUp, signInWithGoogle, signOut } = useAuth();
 
   if (loading) {
     return (
@@ -14,7 +14,7 @@ export default function App() {
   }
 
   if (!user) {
-    return <AuthPage onSignIn={signIn} onSignUp={signUp} />;
+    return <AuthPage onSignIn={signIn} onSignUp={signUp} onGoogleSignIn={signInWithGoogle} />;
   }
 
   return <Feed user={user} onSignOut={signOut} />;
