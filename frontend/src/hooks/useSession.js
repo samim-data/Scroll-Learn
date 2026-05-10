@@ -11,7 +11,7 @@ function loadSession() {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (stored?.date === getTodayKey()) return stored;
   } catch {}
-  return { date: getTodayKey(), count: 0, topics: {} };
+  return { date: getTodayKey(), count: 0, topics: {}, startTime: Date.now() };
 }
 
 export function useSession() {
@@ -20,7 +20,7 @@ export function useSession() {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    if (session.count > 0 && session.count % 10 === 0) {
+    if (session.count > 0 && session.count % 25 === 0) {
       setAutoShow(true);
     }
   }, [session]);
@@ -34,6 +34,7 @@ export function useSession() {
         ...base,
         count: base.count + 1,
         topics: { ...base.topics, [topic]: (base.topics[topic] || 0) + 1 },
+        startTime: base.startTime || Date.now(),
       };
     });
   }
