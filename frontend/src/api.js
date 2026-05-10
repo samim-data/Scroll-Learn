@@ -25,3 +25,10 @@ export async function getRecommend(videoId, limit = 10, offset = 0) {
   });
   return response.data;
 }
+
+export async function searchVideos(query, limit = 20) {
+  const response = await axios.get(`${API_BASE}/search`, {
+    params: { q: query, limit },
+  });
+  return response.data;
+}
