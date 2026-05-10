@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import feedRouter from './routes/feed.js';
 import adminRouter from './routes/admin.js';
 import deepdiveRoutes from './routes/deepdive.js';
+import recommendRouter from './routes/recommend.js';
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.get('/health', (req, res) => {
 
 
 app.use('/api', feedRouter);
+app.use('/api', recommendRouter);
 app.use('/api/admin', adminRouter);
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
