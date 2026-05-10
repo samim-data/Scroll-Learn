@@ -18,3 +18,10 @@ export async function getDeepDive(youtubeVideoId) {
   const response = await axios.get(`${API_BASE}/deepdive/${youtubeVideoId}`);
   return response.data;
 }
+
+export async function getRecommend(videoId, limit = 10, offset = 0) {
+  const response = await axios.get(`${API_BASE}/recommend`, {
+    params: { video_id: videoId, limit, offset },
+  });
+  return response.data;
+}
