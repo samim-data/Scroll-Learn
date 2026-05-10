@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { getFeed, getRecommend } from '../api';
+import { getFeed, getRecommend, getDeepDive } from '../api';
 import VideoCard from './VideoCard';
 import CategoryMenu from './CategoryMenu';
 import PersistentPlayer from './PersistentPlayer';
@@ -162,6 +162,14 @@ export default function Feed({ user, onSignOut }) {
       lastRecordedIndexRef.current = activeIndex;
     }
   }, [activeIndex, videos, recordWatch]);
+
+  // Pre-warm slide cache for active + next video so "Go Deeper" is instant
+  useEffect(() => {
+    [activeIndex, activeIndex + 1].forEach(i => {
+      const video = videos[i];
+      if (video) getDeepDive(video.youtube_video_id).catch(() => {});
+    });
+  }, [activeIndex, videos]);
 
   return (
     <>
