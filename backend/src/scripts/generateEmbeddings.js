@@ -14,7 +14,7 @@ async function run() {
   const { data: videos, error } = await supabase
     .from('videos')
     .select(`
-      id, youtube_video_id, title, description, transcript_text,
+      id, youtube_video_id, title, description,
       channel:channels!inner(name, category)
     `)
     .is('embedding', null);
@@ -30,8 +30,8 @@ async function run() {
 
     await Promise.all(batch.map(async (video) => {
       try {
-        // use stored transcript or fetch on the fly
-        const transcript = video.transcript_text || await getTranscript(video.youtube_video_id);
+        // fetch transcript on the fly (transcript_text not stored yet)
+        const transcript = await getTranscript(video.youtube_video_id);
 
         const embedding = await generateEmbedding({
           title:       video.title,
