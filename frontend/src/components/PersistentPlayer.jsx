@@ -35,15 +35,6 @@ const PersistentPlayer = forwardRef(({ initialVideoId, isVisible, userInteracted
         },
     }));
 
-    useEffect(() => {
-        if (userInteracted && playerRef.current && isReady) {
-            try {
-                playerRef.current.unMute();
-                playerRef.current.setVolume(100);
-            } catch (e) { }
-        }
-    }, [userInteracted, isReady]);
-
     const onReady = (event) => {
         playerRef.current = event.target;
         setIsReady(true);
@@ -72,16 +63,21 @@ const PersistentPlayer = forwardRef(({ initialVideoId, isVisible, userInteracted
         if (!scrollContainer) return;
         if (scrollContainer.dataset.scrolling === 'true') return;
 
+        // Determine which card is currently in view, then target the next one exactly.
+        // This avoids pixel-math drift from scrollBy(window.innerHeight) which can
+        // land between snap points and cause double-skips.
+        const currentIndex = Math.round(scrollContainer.scrollTop / scrollContainer.clientHeight);
+        const targetIndex = currentIndex + direction;
+        const targetCard = scrollContainer.querySelector(`[data-video-index="${targetIndex}"]`);
+        if (!targetCard) return;
+
         scrollContainer.dataset.scrolling = 'true';
         setTimeout(() => {
             scrollContainer.dataset.scrolling = 'false';
-        }, 600);
+        }, 800);
 
-        const videoHeight = window.innerHeight;
-        scrollContainer.scrollBy({
-            top: direction * videoHeight,
-            behavior: 'smooth',
-        });
+        const delta = targetCard.getBoundingClientRect().top - scrollContainer.getBoundingClientRect().top;
+        scrollContainer.scrollBy({ top: delta, behavior: 'auto' });
     };
 
     const handleWheel = (e) => {
@@ -101,8 +97,8 @@ const PersistentPlayer = forwardRef(({ initialVideoId, isVisible, userInteracted
         const touchEndY = e.changedTouches[0].clientY;
         const deltaY = touchStartYRef.current - touchEndY;
 
-        // Only trigger if swipe is significant (50px or more)
-        if (Math.abs(deltaY) < 50) return;
+        // Only trigger if swipe is significant (25px or more)
+        if (Math.abs(deltaY) < 25) return;
 
         const direction = deltaY > 0 ? 1 : -1;  // swipe up = scroll down (next video)
         triggerScroll(direction);
