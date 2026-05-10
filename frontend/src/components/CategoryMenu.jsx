@@ -10,6 +10,7 @@ const CATEGORIES = [
   { value: 'mind', label: 'Philosophy & Mind' },
   { value: 'health', label: 'Health & Biology' },
   { value: 'language', label: 'Language & Linguistics' },
+  { value: 'sport', label: 'Sport & Fitness' },
 ];
 
 export default function CategoryMenu({ selectedCategory, onSelectCategory }) {

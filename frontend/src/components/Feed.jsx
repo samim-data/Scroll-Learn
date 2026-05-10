@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { getFeed } from '../api';
+import { getFeed, getRecommend } from '../api';
 import VideoCard from './VideoCard';
 import CategoryMenu from './CategoryMenu';
 import PersistentPlayer from './PersistentPlayer';
@@ -66,13 +66,19 @@ export default function Feed({ user, onSignOut }) {
     loadInitial();
   }, [selectedCategory]);
 
-  // Load more videos
+  // Load more videos — use recommendation after 3 watches, chronological before
   const loadMore = useCallback(async () => {
     if (isLoadingMoreRef.current || !hasMore) return;
     isLoadingMoreRef.current = true;
 
     try {
-      const data = await getFeed(PAGE_SIZE, videos.length, selectedCategory);
+      const currentVideo = videos[activeIndex];
+      const useRecommend = activeIndex >= 3 && currentVideo && !selectedCategory;
+
+      const data = useRecommend
+        ? await getRecommend(currentVideo.youtube_video_id, PAGE_SIZE, videos.length - INITIAL_LOAD)
+        : await getFeed(PAGE_SIZE, videos.length, selectedCategory);
+
       setVideos((prev) => [...prev, ...data.videos]);
       setHasMore(data.hasMore);
     } catch (err) {
@@ -80,7 +86,7 @@ export default function Feed({ user, onSignOut }) {
     } finally {
       isLoadingMoreRef.current = false;
     }
-  }, [videos.length, hasMore, selectedCategory]);
+  }, [videos, activeIndex, hasMore, selectedCategory]);
 
   // Proactive pagination during browser idle
   useEffect(() => {
