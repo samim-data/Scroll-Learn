@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getFeed, trackWatch, type Video } from "@/lib/api";
+import { getFeed, getDeepDive, trackWatch, type Video } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useSaved } from "@/lib/saved";
 import { Avatar } from "@/components/Avatar";
@@ -128,6 +128,14 @@ function Feed() {
       if (watchTimerRef.current) window.clearTimeout(watchTimerRef.current);
     };
   }, [activeIdx, videos, user]);
+
+  // Pre-warm slide cache for active + next video so Go Deeper is instant
+  useEffect(() => {
+    [activeIdx, activeIdx + 1].forEach((i) => {
+      const v = videos[i];
+      if (v?.youtube_video_id) getDeepDive(v.youtube_video_id).catch(() => {});
+    });
+  }, [activeIdx, videos]);
 
   const showEmpty = useMemo(() => !loading && videos.length === 0, [loading, videos.length]);
 
