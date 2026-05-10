@@ -3,6 +3,8 @@ import {
   getLatestVideosFromPlaylist,
   getVideoDetails,
 } from './youtube.js';
+import { generateEmbedding } from './embeddings.js';
+import { getTranscript } from './transcript.js';
 
 const MAX_DURATION_SECONDS = 180;
 
@@ -100,9 +102,10 @@ export async function refreshLibrary() {
         continue;
       }
 
-      const { error: insertError } = await supabase
+      const { data: inserted, error: insertError } = await supabase
         .from('videos')
-        .insert(videosToInsert);
+        .insert(videosToInsert)
+        .select('id, youtube_video_id, title, description, channel_id');
 
       if (insertError) {
         console.error(`  Insert error: ${insertError.message}`);
@@ -111,6 +114,13 @@ export async function refreshLibrary() {
 
       console.log(`  Added ${videosToInsert.length} new short videos`);
       totalVideosAdded += videosToInsert.length;
+
+      // generate embeddings for newly inserted videos (fire and forget)
+      if (inserted?.length) {
+        embedNewVideos(inserted, channel).catch(err =>
+          console.error(`  Embedding error: ${err.message}`)
+        );
+      }
     } catch (err) {
       console.error(`  Error processing ${channel.name}: ${err.message}`);
     }
@@ -128,4 +138,26 @@ export async function refreshLibrary() {
     quotaUsed: totalQuotaUsed,
     durationSeconds: parseFloat(duration),
   };
+}
+
+async function embedNewVideos(videos, channel) {
+  for (const video of videos) {
+    try {
+      const transcript = await getTranscript(video.youtube_video_id);
+      const embedding = await generateEmbedding({
+        title:       video.title,
+        channelName: channel.name,
+        category:    channel.category,
+        description: video.description,
+        transcript,
+      });
+      await supabase
+        .from('videos')
+        .update({ embedding: JSON.stringify(embedding) })
+        .eq('id', video.id);
+      console.log(`  ✓ Embedded: ${video.title?.slice(0, 50)}`);
+    } catch (err) {
+      console.error(`  ✗ Embed failed for ${video.youtube_video_id}: ${err.message}`);
+    }
+  }
 }
