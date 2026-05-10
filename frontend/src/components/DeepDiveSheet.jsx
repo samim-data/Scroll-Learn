@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getDeepDive } from '../api';
 import SummarySlide from './slides/SummarySlide';
 import ConceptSlide from './slides/ConceptSlide';
@@ -18,10 +18,11 @@ export default function DeepDiveSheet({ video, isOpen, onClose }) {
   const [activeSlide, setActiveSlide] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
   const scrollRef = useRef(null);
 
-  useEffect(() => {
-    if (!isOpen || !video) return;
+  const load = useCallback(() => {
+    if (!video) return;
     setSlides([]);
     setActiveSlide(0);
     setError(null);
@@ -31,9 +32,15 @@ export default function DeepDiveSheet({ video, isOpen, onClose }) {
       .then(data => setSlides(data.slides || []))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, [isOpen, video]);
+  }, [video, retryCount]); // retryCount in deps forces re-run on retry
 
-  // track active dot as user scrolls horizontally
+  useEffect(() => {
+    if (!isOpen || !video) return;
+    load();
+  }, [isOpen, video, load]);
+
+  const handleRetry = () => setRetryCount(c => c + 1);
+
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const index = Math.round(
@@ -78,17 +85,24 @@ export default function DeepDiveSheet({ video, isOpen, onClose }) {
           </div>
         )}
 
-        {/* Error */}
+        {/* Error + retry */}
         {error && !loading && (
-          <div className="h-full flex items-center justify-center px-6">
-            <p className="text-red-400 text-sm text-center">{error}</p>
+          <div className="h-full flex flex-col items-center justify-center px-6 gap-4">
+            <p className="text-zinc-400 text-sm text-center">
+              Something went wrong. Try again?
+            </p>
+            <button
+              onClick={handleRetry}
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-full transition-colors"
+            >
+              Retry
+            </button>
           </div>
         )}
 
         {/* Slides */}
         {!loading && !error && slides.length > 0 && (
           <div className="h-full flex flex-col pt-8">
-            {/* Horizontal slide strip */}
             <div
               ref={scrollRef}
               onScroll={handleScroll}
@@ -96,10 +110,7 @@ export default function DeepDiveSheet({ video, isOpen, onClose }) {
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {slides.map((slide, i) => (
-                <div
-                  key={i}
-                  className="flex-shrink-0 w-full h-full snap-start"
-                >
+                <div key={i} className="flex-shrink-0 w-full h-full snap-start">
                   <SlideRenderer slide={slide} />
                 </div>
               ))}
