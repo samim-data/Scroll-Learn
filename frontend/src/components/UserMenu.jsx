@@ -18,7 +18,7 @@ export default function UserMenu({ user, onSignOut }) {
   }, [open]);
 
   return (
-    <div ref={ref} className="fixed top-4 right-4 z-30">
+    <div ref={ref} className="fixed top-4 left-4 z-30">
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition"
@@ -30,7 +30,7 @@ export default function UserMenu({ user, onSignOut }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-44 bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden shadow-xl">
+        <div className="absolute left-0 mt-2 w-44 bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden shadow-xl">
           <div className="px-4 py-3 border-b border-zinc-800">
             <p className="text-white text-xs font-medium truncate">{user?.email}</p>
           </div>
